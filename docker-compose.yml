@@ -1,0 +1,77 @@
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=openproject
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=openproject
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openproject"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      - openproject-network
+
+  web:
+    image: openproject/openproject:15
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - opdata:/var/openproject/assets
+    environment:
+      - OPENPROJECT_HOST__NAME=${OPENPROJECT_HOST_NAME}
+      - OPENPROJECT_HTTPS=${OPENPROJECT_HTTPS}
+      - OPENPROJECT_SECRET_KEY_BASE=${OPENPROJECT_SECRET_KEY_BASE:-your_secure_key}
+      - DATABASE_URL=postgres://openproject:${POSTGRES_PASSWORD}@db/openproject
+      - RAILS_ENV=production
+      - RAILS_MIN_THREADS=4
+      - RAILS_MAX_THREADS=16
+      - RAILS_CACHE_STORE=redis
+      - APACHE_SERVER_NAME=${OPENPROJECT_HOST_NAME}
+      - APACHE_PORT=80
+    ports:
+      - "${PORT}:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          cpus: "3.0"
+          memory: 6G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      - openproject-network
+
+volumes:
+  pgdata:
+    name: openproject_pgdata
+  opdata:
+    name: openproject_opdata
+
+networks:
+  openproject-network:
+    driver: bridge

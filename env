@@ -1,0 +1,15 @@
+# OpenProject Configuration
+OPENPROJECT_HOST_NAME=openproject.example.com
+OPENPROJECT_HTTPS=true
+OPENPROJECT_SECRET_KEY_BASE=your_secure_key_here
+PORT=8080
+
+# PostgreSQL Configuration
+POSTGRES_PASSWORD=your_secure_password_here
+
+# Optional: Email Configuration (uncomment and configure for production)
+# OPENPROJECT_SMTP__ADDRESS=smtp.example.com
+# OPENPROJECT_SMTP__PORT=465
+# OPENPROJECT_SMTP__USERNAME=username@example.com
+# OPENPROJECT_SMTP__PASSWORD=your_smtp_password
+# OPENPROJECT_SMTP__ENABLE__STARTTLS__AUTO=true
